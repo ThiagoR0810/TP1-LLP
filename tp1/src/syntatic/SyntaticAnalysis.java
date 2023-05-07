@@ -315,308 +315,312 @@ public class SyntaticAnalysis {
         return expr;
     }
 
-  // <cond> ::= <rel> { ( '&&' | '||' ) <rel> }
-  private Expr procCond() {
-      Expr expr = procRel();
-      while (match(AND, OR)) {
-          // TODO: Me implementar.
-          procRel();
-      }
+    // <cond> ::= <rel> { ( '&&' | '||' ) <rel> }
+    private Expr procCond() {
+        Expr expr = procRel();
+        while (match(AND, OR)) {
+            // TODO: Me implementar.
+            procRel();
+        }
 
-      return expr;
-  }
+        return expr;
+    }
 
-  // <rel> ::= <arith> [ ( '<' | '>' | '<=' | '>=' | '==' | '!=' ) <arith> ]
-  private Expr procRel() {
-      Expr expr = procArith();
+    // <rel> ::= <arith> [ ( '<' | '>' | '<=' | '>=' | '==' | '!=' ) <arith> ]
+    private Expr procRel() {
+        Expr expr = procArith();
 
-      // TODO: fazer o resto.
+        if (match(Token.Type.GREATER_THAN, Token.Type.LOWER_THAN,
+                    Token.Type.GREATER_EQUAL, Token.Type.LOWER_EQUAL, 
+                    Token.Type.EQUALS, Token.Type.NOT_EQUALS)) {
+                expr = procArith();
+        }
 
-      return expr;
-  }
+        return expr;
+    }
 
-  // <arith> ::= <term> { ( '+' | '-' ) <term> }
-  private Expr procArith() {
-      Expr left = procTerm();
-      while (match(ADD, SUB)) {
-          BinaryExpr.Op op;
-          switch (previous.type) {
-              case ADD:
-                  op = BinaryExpr.Op.Add;
-                  break;
-              case SUB:
-              default:
-                  op = BinaryExpr.Op.Sub;
-                  break;
-          }
+    // <arith> ::= <term> { ( '+' | '-' ) <term> }
+    private Expr procArith() {
+        Expr left = procTerm();
+        while (match(ADD, SUB)) {
+            BinaryExpr.Op op;
+            switch (previous.type) {
+                case ADD:
+                    op = BinaryExpr.Op.Add;
+                    break;
+                case SUB:
+                default:
+                    op = BinaryExpr.Op.Sub;
+                    break;
+            }
 
-          int line = previous.line;
+            int line = previous.line;
 
-          Expr right = procTerm();
+            Expr right = procTerm();
 
-          left = new BinaryExpr(line, left, op, right);
-      }
+            left = new BinaryExpr(line, left, op, right);
+        }
 
-      return left;
-  }
+        return left;
+    }
 
-  // <term> ::= <prefix> { ( '*' | '/' ) <prefix> }
-  private Expr procTerm() {
-      Expr left = procPrefix();
+    // <term> ::= <prefix> { ( '*' | '/' ) <prefix> }
+    private Expr procTerm() {
+        Expr left = procPrefix();
 
-      while (match(MUL, DIV)) {
-          BinaryExpr.Op op;
-          switch (previous.type) {
-              case MUL:
-                  op = BinaryExpr.Op.Mul;
-                  break;
-              case DIV:
-              default:
-                  op = BinaryExpr.Op.Div;
-                  break;
-          }
+        while (match(MUL, DIV)) {
+            BinaryExpr.Op op;
+            switch (previous.type) {
+                case MUL:
+                    op = BinaryExpr.Op.Mul;
+                    break;
+                case DIV:
+                default:
+                    op = BinaryExpr.Op.Div;
+                    break;
+            }
 
-          int line = previous.line;
+            int line = previous.line;
 
-          Expr right = procPrefix();
+            Expr right = procPrefix();
 
-          left = new BinaryExpr(line, left, op, right);
-      }
+            left = new BinaryExpr(line, left, op, right);
+        }
 
-      return left;
-  }
+        return left;
+    }
 
-  // <prefix> ::= [ '!' | '+' | '-' | '++' | '--' ] <factor>
-  private Expr procPrefix() {
-      Token token = null;
-      if (match(NOT, ADD, SUB, INC, DEC)) {
-          token = previous;
-      }
+    // <prefix> ::= [ '!' | '+' | '-' | '++' | '--' ] <factor>
+    private Expr procPrefix() {
+        Token token = null;
+        if (match(NOT, ADD, SUB, INC, DEC)) {
+            token = previous;
+        }
 
-      Expr expr = procFactor();
+        Expr expr = procFactor();
 
-      if (token != null) {
-          UnaryExpr.Op op;
-          switch (token.type) {
-              case NOT:
-                  op = UnaryExpr.Op.Not;
-                  break;
-              case ADD:
-                  op = UnaryExpr.Op.Pos;
-                  break;
-              case SUB:
-                  op = UnaryExpr.Op.Neg;
-                  break;
-              case INC:
-                  op = UnaryExpr.Op.PreInc;
-                  break;
-              case DEC:
-              default:
-                  op = UnaryExpr.Op.PreDec;
-                  break;
-          }
+        if (token != null) {
+            UnaryExpr.Op op;
+            switch (token.type) {
+                case NOT:
+                    op = UnaryExpr.Op.Not;
+                    break;
+                case ADD:
+                    op = UnaryExpr.Op.Pos;
+                    break;
+                case SUB:
+                    op = UnaryExpr.Op.Neg;
+                    break;
+                case INC:
+                    op = UnaryExpr.Op.PreInc;
+                    break;
+                case DEC:
+                default:
+                    op = UnaryExpr.Op.PreDec;
+                    break;
+            }
 
-          UnaryExpr uexpr = new UnaryExpr(previous.line,
-               expr, op);
-          expr = uexpr;
-      }
+            UnaryExpr uexpr = new UnaryExpr(previous.line,
+                expr, op);
+            expr = uexpr;
+        }
 
-      return expr;
-  }
+        return expr;
+    }
 
-  // <factor> ::= ( '(' <expr> ')' | <rvalue> ) <calls>  [ '++' | '--' ]
-  private Expr procFactor() {
-      Expr expr = null;
-      if (match(OPEN_PAR)) {
-          expr = procExpr();
-          eat(CLOSE_PAR);
-      } else {
-          expr = procRValue();
-      }
+    // <factor> ::= ( '(' <expr> ')' | <rvalue> ) <calls>  [ '++' | '--' ]
+    private Expr procFactor() {
+        Expr expr = null;
+        if (match(OPEN_PAR)) {
+            expr = procExpr();
+            eat(CLOSE_PAR);
+        } else {
+            expr = procRValue();
+        }
 
-      expr = procCalls(expr);
+        expr = procCalls(expr);
 
-      if (match(INC, DEC)) {
-          // fazer nada
-      }
+        if (match(INC, DEC)) {
+            // fazer nada
+        }
 
-      return expr;
-  }
+        return expr;
+    }
 
-  // <rvalue> ::= <const> | <list> | <object> | <function> | <lvalue>
-  private Expr procRValue() {
-      Expr expr = null;
-      if (check(UNDEFINED, FALSE, TRUE, NUMBER, TEXT)) {
-          Value<?> v = procConst();
-          expr = new ConstExpr(previous.line, v);
-      } else if (check(OPEN_BRA)) {
-          procList();
-      } else if (check(OPEN_CUR)) {
-          procObject();
-      } else if (check(FUNCTION)) {
-          int line = current.line;
-          StandardFunction sf = procFunction();
-          FunctionValue fv = new FunctionValue(sf);
-          expr = new ConstExpr(line, fv);
-      } else {
-          expr = procLValue();
-      }
+    // <rvalue> ::= <const> | <list> | <object> | <function> | <lvalue>
+    private Expr procRValue() {
+        Expr expr = null;
+        if (check(UNDEFINED, FALSE, TRUE, NUMBER, TEXT)) {
+            Value<?> v = procConst();
+            expr = new ConstExpr(previous.line, v);
+        } else if (check(OPEN_BRA)) {
+            procList();
+        } else if (check(OPEN_CUR)) {
+            procObject();
+        } else if (check(FUNCTION)) {
+            int line = current.line;
+            StandardFunction sf = procFunction();
+            FunctionValue fv = new FunctionValue(sf);
+            expr = new ConstExpr(line, fv);
+        } else {
+            expr = procLValue();
+        }
 
-      return expr;
-  }
+        return expr;
+    }
 
-  // <const> ::= undefined | false | true | <number> | <text>
-  private Value<?> procConst() {
-      Value<?> v = null;
-      if (match(UNDEFINED, FALSE, TRUE)) {
-          switch (previous.type) {
-              case UNDEFINED:
-                  v = null;
-                  break;
-              case FALSE:
-                  v = new BoolValue(false);
-                  break;
-              case TRUE:
-              default:
-                  v = new BoolValue(true);
-                  break;
-          }
-          // fazer nada
-      } else if (check(NUMBER)) {
-          v = procNumber();
-      } else if (check(TEXT)) {
-          v = procText();
-      } else {
-          reportError();
-      }
+    // <const> ::= undefined | false | true | <number> | <text>
+    private Value<?> procConst() {
+        Value<?> v = null;
+        if (match(UNDEFINED, FALSE, TRUE)) {
+            switch (previous.type) {
+                case UNDEFINED:
+                    v = null;
+                    break;
+                case FALSE:
+                    v = new BoolValue(false);
+                    break;
+                case TRUE:
+                default:
+                    v = new BoolValue(true);
+                    break;
+            }
+            // fazer nada
+        } else if (check(NUMBER)) {
+            v = procNumber();
+        } else if (check(TEXT)) {
+            v = procText();
+        } else {
+            reportError();
+        }
 
-      return v;
-  }
+        return v;
+    }
 
-  // <list> ::= '[' [ <expr> { ',' <expr> } ] ']'
-  private void procList() {
-      eat(OPEN_BRA);
+    // <list> ::= '[' [ <expr> { ',' <expr> } ] ']'
+    private void procList() {
+        eat(OPEN_BRA);
 
-      if (check(NOT, ADD, SUB, INC, DEC, OPEN_PAR,
-              UNDEFINED, FALSE, TRUE, NUMBER, TEXT, OPEN_BRA,
-              OPEN_CUR, FUNCTION, NAME)) {
-          procExpr();
+        if (check(NOT, ADD, SUB, INC, DEC, OPEN_PAR,
+                UNDEFINED, FALSE, TRUE, NUMBER, TEXT, OPEN_BRA,
+                OPEN_CUR, FUNCTION, NAME)) {
+            procExpr();
 
-          while (match(COMMA)) {
-              procExpr();
-          }
-      }
+            while (match(COMMA)) {
+                procExpr();
+            }
+        }
 
-      eat(CLOSE_BRA);
-  }
+        eat(CLOSE_BRA);
+    }
 
-  // <object> ::= '{' [ <name> ':' <expr> { ',' <name> ':' <expr> } ] '}'
-  private void procObject() {
-      eat(OPEN_CUR);
+    // <object> ::= '{' [ <name> ':' <expr> { ',' <name> ':' <expr> } ] '}'
+    private void procObject() {
+        eat(OPEN_CUR);
 
-      if (check(NAME)) {
-          procName();
-          eat(COLON);
-          procExpr();
+        if (check(NAME)) {
+            procName();
+            eat(COLON);
+            procExpr();
 
-          while (match(COMMA)) {
-              procName();
-              eat(COLON);
-              procExpr();
-          }
-      }
+            while (match(COMMA)) {
+                procName();
+                eat(COLON);
+                procExpr();
+            }
+        }
 
-      eat(CLOSE_CUR);
-  }
+        eat(CLOSE_CUR);
+    }
 
-  // <function> ::= function '(' ')' '{' <code> [ return <expr> ';' ] '}'
-  private StandardFunction procFunction() {
-      eat(FUNCTION);
-      eat(OPEN_PAR);
-      eat(CLOSE_PAR);
-      eat(OPEN_CUR);
+    // <function> ::= function '(' ')' '{' <code> [ return <expr> ';' ] '}'
+    private StandardFunction procFunction() {
+        eat(FUNCTION);
+        eat(OPEN_PAR);
+        eat(CLOSE_PAR);
+        eat(OPEN_CUR);
 
-      Environment old = this.environment;
-      this.environment = new Environment(old);
+        Environment old = this.environment;
+        this.environment = new Environment(old);
 
-      StandardFunction sf = null;
-      try {
-          Variable params = this.environment.declare(
-              new Token("params", Token.Type.NAME, null),
-              false);
-      
-          Command cmds = procCode();
-          Expr ret = null;
-          if (match(RETURN)) {
-              ret = procExpr();
-              eat(SEMICOLON);
-          }
+        StandardFunction sf = null;
+        try {
+            Variable params = this.environment.declare(
+                new Token("params", Token.Type.NAME, null),
+                false);
+        
+            Command cmds = procCode();
+            Expr ret = null;
+            if (match(RETURN)) {
+                ret = procExpr();
+                eat(SEMICOLON);
+            }
 
-          sf = new StandardFunction(params, cmds, ret);
-      } finally {
-          this.environment = old;
-      }
-      eat(CLOSE_CUR);
+            sf = new StandardFunction(params, cmds, ret);
+        } finally {
+            this.environment = old;
+        }
+        eat(CLOSE_CUR);
 
-      return sf;
-  }
+        return sf;
+    }
 
-  // <lvalue> ::= <name> { '.' <name> | '[' <expr> ']' }
-  private SetExpr procLValue() {
-      Token name = procName();
-      Variable var = this.environment.get(name);
+    // <lvalue> ::= <name> { '.' <name> | '[' <expr> ']' }
+    private SetExpr procLValue() {
+        Token name = procName();
+        Variable var = this.environment.get(name);
 
-      // while (check(DOT, OPEN_BRA)) {
-      //     if (match(DOT)) {
-      //         procName();
-      //     } else {
-      //         eat(OPEN_BRA);
-      //         procExpr();
-      //         eat(CLOSE_BRA);
-      //     }
-      // }
+        while (check(Token.Type.DOT, OPEN_BRA)) {
+            if (match(Token.Type.DOT)) {
+                procName();
+            } else {
+                eat(OPEN_BRA);
+                procExpr();
+                eat(CLOSE_BRA);
+            }
+        }
 
-      return var;
-  }
+        return var;
+    }
 
-  // <calls> ::= { '(' [ <expr> { ',' <expr> } ] ')' }
-  private Expr procCalls(Expr expr) {
-      while (match(OPEN_PAR)) {
-          int line = previous.line;
+    // <calls> ::= { '(' [ <expr> { ',' <expr> } ] ')' }
+    private Expr procCalls(Expr expr) {
+        while (match(OPEN_PAR)) {
+            int line = previous.line;
 
-          List<Expr> args = new ArrayList<Expr>();
-          if (check(NOT, ADD, SUB, INC, DEC, OPEN_PAR,
-                  UNDEFINED, FALSE, TRUE, NUMBER, TEXT, OPEN_BRA,
-                  OPEN_CUR, FUNCTION, NAME)) {
-              Expr a = procExpr();
-              args.add(a);
-              while (match(COMMA)) {
-                  a = procExpr();
-                  args.add(a);
-              }
-          }
+            List<Expr> args = new ArrayList<Expr>();
+            if (check(NOT, ADD, SUB, INC, DEC, OPEN_PAR,
+                    UNDEFINED, FALSE, TRUE, NUMBER, TEXT, OPEN_BRA,
+                    OPEN_CUR, FUNCTION, NAME)) {
+                Expr a = procExpr();
+                args.add(a);
+                while (match(COMMA)) {
+                    a = procExpr();
+                    args.add(a);
+                }
+            }
 
-          eat(CLOSE_PAR);
+            eat(CLOSE_PAR);
 
-          expr = new FunctionCallExpr(line, expr, args);
-      }
-      
-      return expr;
-  }
+            expr = new FunctionCallExpr(line, expr, args);
+        }
+        
+        return expr;
+    }
 
-  private Value<?> procNumber() {
-      eat(NUMBER);
-      return previous.literal;
-  }
+    private Value<?> procNumber() {
+        eat(NUMBER);
+        return previous.literal;
+    }
 
-  private Value<?> procText() {
-      eat(TEXT);
-      return previous.literal;
-  }
+    private Value<?> procText() {
+        eat(TEXT);
+        return previous.literal;
+    }
 
-  private Token procName() {
-      eat(NAME);
-      return previous;
-  }
+    private Token procName() {
+        eat(NAME);
+        return previous;
+    }
 
 }
