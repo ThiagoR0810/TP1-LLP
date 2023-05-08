@@ -1,6 +1,8 @@
 package interpreter.command;
 
 import interpreter.expr.Expr;
+import interpreter.value.BoolValue;
+import interpreter.value.Value;
 
 public class IfCommand extends Command {
     
@@ -17,6 +19,12 @@ public class IfCommand extends Command {
 
     @Override
     public void execute () {
-        //Falta fazer
+        Value<?> v = expr.expr();
+        boolean b = BoolValue.convert(v);
+        if (b){
+            thenCmds.execute();
+        } else {
+            elseCmds.execute();
+        }
     }
 }
