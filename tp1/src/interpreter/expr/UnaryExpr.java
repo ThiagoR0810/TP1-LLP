@@ -62,18 +62,22 @@ public class UnaryExpr extends Expr {
     }
 
     private Value<?> preIncOp(Value<?> v) {
-        throw new RuntimeException("Me implemente");
+        double n = NumberValue.convert(v);
+        return new NumberValue(++n);
     }
 
     private Value<?> posIncOp(Value<?> v) {
-        throw new RuntimeException("Me implemente");
+        double n = NumberValue.convert(v);
+        return new NumberValue(n++);
     }
 
     private Value<?> preDecOp(Value<?> v) {
-        throw new RuntimeException("Me implemente");
+        double n = NumberValue.convert(v);
+        return new NumberValue(--n);
     }
 
     private Value<?> posDecOp(Value<?> v) {
-        throw new RuntimeException("Me implemente");
+        double n = NumberValue.convert(v);
+        return new NumberValue(n--);
     }
 }
