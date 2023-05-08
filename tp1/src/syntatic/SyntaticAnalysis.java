@@ -320,6 +320,16 @@ public class SyntaticAnalysis {
         Expr expr = procRel();
         while (match(AND, OR)) {
             // TODO: Me implementar.
+            BinaryExpr.Op op;
+            switch (previous.type) {
+                case AND:
+                    op = BinaryExpr.Op.And;
+                    break;
+                case OR:
+                default:
+                    op = BinaryExpr.Op.Or;
+                    break;
+            }
             procRel();
         }
 

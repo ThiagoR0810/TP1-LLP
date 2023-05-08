@@ -1,5 +1,6 @@
 package interpreter.expr;
 
+import interpreter.value.BoolValue;
 import interpreter.value.NumberValue;
 import interpreter.value.Value;
 
@@ -89,31 +90,45 @@ public class BinaryExpr extends Expr {
     }
 
     private Value<?> equalOp(Value<?> v1, Value<?> v2) {
-        throw new RuntimeException("Me implemente!");
+        double d1 = NumberValue.convert(v1);
+        double d2 = NumberValue.convert(v2);
+        return new BoolValue(d1 == d2);
     }
 
     private Value<?> notEqualOp(Value<?> v1, Value<?> v2) {
-        throw new RuntimeException("Me implemente!");
+        double d1 = NumberValue.convert(v1);
+        double d2 = NumberValue.convert(v2);
+        return new BoolValue(d1 != d2);
     }
 
     private Value<?> lowerThanOp(Value<?> v1, Value<?> v2) {
-        throw new RuntimeException("Me implemente!");
+        double d1 = NumberValue.convert(v1);
+        double d2 = NumberValue.convert(v2);
+        return new BoolValue(d1 < d2);
     }
 
     private Value<?> lowerEqualOp(Value<?> v1, Value<?> v2) {
-        throw new RuntimeException("Me implemente!");
+        double d1 = NumberValue.convert(v1);
+        double d2 = NumberValue.convert(v2);
+        return new BoolValue(d1 <= d2);
     }
 
     private Value<?> greaterThanOp(Value<?> v1, Value<?> v2) {
-        throw new RuntimeException("Me implemente!");
+        double d1 = NumberValue.convert(v1);
+        double d2 = NumberValue.convert(v2);
+        return new BoolValue(d1 > d2);
     }
 
     private Value<?> greaterEqualOp(Value<?> v1, Value<?> v2) {
-        throw new RuntimeException("Me implemente!");
+        double d1 = NumberValue.convert(v1);
+        double d2 = NumberValue.convert(v2);
+        return new BoolValue(d1 >= d2);
     }
 
     private Value<?> addOp(Value<?> v1, Value<?> v2) {
-        throw new RuntimeException("Me implemente!");
+        double d1 = NumberValue.convert(v1);
+        double d2 = NumberValue.convert(v2);
+        return new NumberValue(d1 + d2);
     }
 
     private Value<?> subOp(Value<?> v1, Value<?> v2) {
