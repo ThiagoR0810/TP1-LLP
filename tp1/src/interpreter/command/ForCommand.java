@@ -2,6 +2,8 @@ package interpreter.command;
 
 import interpreter.expr.Expr;
 import interpreter.expr.Variable;
+import interpreter.value.BoolValue;
+import interpreter.value.Value;
 
 public class ForCommand extends Command {
     
@@ -18,6 +20,10 @@ public class ForCommand extends Command {
 
     @Override
     public void execute () {
-        // Falta fazer
+        Value<?> e = expr.expr();
+        boolean b = BoolValue.convert(e);
+       for (var.initialize(e); b; var.expr()) {
+            cmds.execute();
+        }
     }
 }

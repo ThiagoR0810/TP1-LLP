@@ -22,7 +22,6 @@ public class WhileCommand extends Command {
             boolean b = BoolValue.convert(v);
             if (!b)
                 break;
-
             cmds.execute();
         }
     }
