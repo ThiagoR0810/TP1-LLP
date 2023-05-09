@@ -14,12 +14,12 @@ public class AccessExpr extends SetExpr {
     }
 
     @Override
-    public Value<?> expr (){
-        throw new RuntimeException("Me implemente!");
+    public Value<?> expr(){
+        return index.expr();
     }
 
     @Override
     public void setValue( Value<?> value) {
-        throw new RuntimeException("Me implemente!");
+        base.setValue(value);
     }
 }

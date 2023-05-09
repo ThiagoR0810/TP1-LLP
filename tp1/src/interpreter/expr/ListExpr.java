@@ -1,21 +1,20 @@
 package interpreter.expr;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import interpreter.value.Value;
 
 public class ListExpr extends Expr {
     
-    private List<Expr> items;
+    private List<Expr> itens;
 
-    public ListExpr (int line, List<Expr> items) {
+    public ListExpr (int line, List<Expr> itens) {
         super(line);
-        this.items = items;
+        this.itens = itens;
     }
 
     @Override
-    public Value<?> expr (){
-        throw new RuntimeException("Me implemente!");
+    public Value<?> expr(){
+        return itens.get(getLine()).expr();
     }
 }

@@ -16,6 +16,15 @@ public class CondicionalExpr extends Expr {
     }
 
     public Value<?> expr() {
-        throw new RuntimeException("Me implemente!");
+        Value<?> condValue = cond.expr();
+        if(condValue.value() instanceof Boolean){
+            if((Boolean) condValue.value()){
+                return trueExpr.expr();
+            }else{
+                return falseExpr.expr();
+            }
+        }else{
+            throw new RuntimeException("Cond is not a boolean");
+        }
     }
 }

@@ -2,7 +2,6 @@ package interpreter.command;
 
 import interpreter.expr.Expr;
 import interpreter.expr.Variable;
-import interpreter.value.BoolValue;
 import interpreter.value.Value;
 
 public class ForCommand extends Command {

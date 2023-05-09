@@ -1,7 +1,5 @@
 package interpreter.expr;
 
-import javax.management.StringValueExp;
-
 import interpreter.value.BoolValue;
 import interpreter.value.NumberValue;
 import interpreter.value.TextValue;
