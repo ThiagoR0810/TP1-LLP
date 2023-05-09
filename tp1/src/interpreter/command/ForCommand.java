@@ -20,10 +20,15 @@ public class ForCommand extends Command {
 
     @Override
     public void execute () {
-        Value<?> e = expr.expr();
-        boolean b = BoolValue.convert(e);
-       for (var.initialize(e); b; var.expr()) {
-            cmds.execute();
+        Value<?> value = expr.expr();
+        if(value.getClass().isArray()){
+            Value<?>[] array = (Value<?>[]) value.value();
+            for (var.var v : array) {
+                var.setValue(v);
+                cmds.execute();
+            }
+        }else{
+            throw new RuntimeException("Expr is not an iterable");
         }
     }
 }
